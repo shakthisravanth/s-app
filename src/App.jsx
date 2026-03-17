@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -6,16 +6,47 @@ import IntroAnimation from './pages/IntroAnimation';
 import StudentDashboard from './pages/StudentDashboard';
 import CoursePage from './pages/CoursePage';
 import MyLearnings from './pages/MyLearnings';
+import Login from './pages/Login';
 
-const ProtectedRoute = ({ children }) => {
+// Check if user is authenticated (has valid token and student role)
+const isAuthenticated = () => {
   const token = localStorage.getItem('token');
   const role = localStorage.getItem('role');
+  return !!(token && role === 'STUDENT');
+};
 
-  // Must have token AND be a STUDENT (not admin accessing student routes)
-  if (!token || role !== 'STUDENT') {
-    localStorage.clear();
+const ProtectedRoute = ({ children }) => {
+  const [isChecking, setIsChecking] = useState(true);
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    // Only check if token exists and role is STUDENT
+    // Don't clear localStorage here - let API calls handle expired tokens
+    const token = localStorage.getItem('token');
+    const role = localStorage.getItem('role');
+    
+    if (!token || role !== 'STUDENT') {
+      // Only redirect, don't clear storage automatically
+      // Storage will be cleared on actual logout or session expiry via API
+      setIsValid(false);
+    } else {
+      setIsValid(true);
+    }
+    setIsChecking(false);
+  }, []);
+
+  if (isChecking) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050614' }}>
+        <div style={{ color: '#818cf8', fontSize: '1rem' }}>Loading...</div>
+      </div>
+    );
+  }
+
+  if (!isValid) {
     return <Navigate to="/" replace />;
   }
+  
   return children;
 };
 

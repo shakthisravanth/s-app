@@ -1,6 +1,17 @@
 // Centralized fetch wrapper with automatic token expiry detection
 import toast from 'react-hot-toast';
 
+// Logout helper function - clears storage and redirects to home
+export const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    toast.success('Logged out successfully');
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 1000);
+};
+
 export const fetchWithAuth = async (url, options = {}) => {
     const token = localStorage.getItem('token');
 
@@ -15,6 +26,21 @@ export const fetchWithAuth = async (url, options = {}) => {
 
     try {
         const response = await fetch(url, { ...options, headers });
+        
+        // Handle token expiration (401 Unauthorized)
+        if (response.status === 401) {
+            // Token has expired or is invalid
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('name');
+            toast.error('Session expired. Please login again.');
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1500);
+            throw new Error('Session expired');
+        }
+        
         return response;
     } catch (error) {
         // Network error

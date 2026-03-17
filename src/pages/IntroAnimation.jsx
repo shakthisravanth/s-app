@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import Login from './Login';
@@ -7,8 +7,26 @@ const IntroAnimation = () => {
     const [step, setStep] = React.useState(() => {
         return sessionStorage.getItem('intro_played') ? 3 : 1;
     });
+    const [shouldRedirect, setShouldRedirect] = useState(false);
+    const navigate = useNavigate();
+
+    // Check if user is already logged in
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        const role = localStorage.getItem('role');
+        
+        if (token && role === 'STUDENT') {
+            // User is already authenticated, redirect to dashboard
+            setShouldRedirect(true);
+        }
+    }, []);
 
     useEffect(() => {
+        if (shouldRedirect) {
+            navigate('/student-dashboard');
+            return;
+        }
+
         if (step === 3) return;
 
         const timer1 = setTimeout(() => setStep(2), 3000); // 3s for "Welcome"
@@ -21,7 +39,7 @@ const IntroAnimation = () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
         };
-    }, [step]);
+    }, [step, shouldRedirect, navigate]);
 
     const name = "Shakthi Sravanth";
     const nameChars = Array.from(name);

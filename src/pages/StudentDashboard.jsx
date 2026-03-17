@@ -9,7 +9,7 @@ import 'prismjs/components/prism-java';
 import 'prismjs/components/prism-javascript';
 import 'prismjs/themes/prism-tomorrow.css';
 import toast from 'react-hot-toast';
-import { fetchWithAuth, validators } from '../utils/apiHelper';
+import { fetchWithAuth, validators, handleLogout } from '../utils/apiHelper';
 import useWindowSize from '../hooks/useWindowSize';
 
 const StudentDashboard = () => {
@@ -214,8 +214,7 @@ const StudentDashboard = () => {
                                 </button>
                                 <button
                                     onClick={() => {
-                                        localStorage.clear();
-                                        window.location.href = '/';
+                                        handleLogout();
                                     }}
                                     className="nav-action-btn logout"
                                     style={{

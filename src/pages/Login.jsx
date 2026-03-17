@@ -45,6 +45,7 @@ const Login = ({ isEmbedded = false, defaultRole = 'student' }) => {
                 return;
             }
 
+            // Store authentication data persistently
             localStorage.setItem('token', data.token);
             localStorage.setItem('role', data.role);
             localStorage.setItem('name', data.name);
