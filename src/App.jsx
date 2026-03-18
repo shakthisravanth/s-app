@@ -20,17 +20,23 @@ const ProtectedRoute = ({ children }) => {
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
-    // Only check if token exists and role is STUDENT
-    // Don't clear localStorage here - let API calls handle expired tokens
-    const token = localStorage.getItem('token');
-    const role = localStorage.getItem('role');
-    
-    if (!token || role !== 'STUDENT') {
-      // Only redirect, don't clear storage automatically
-      // Storage will be cleared on actual logout or session expiry via API
+    try {
+      // Only check if token exists and role is STUDENT
+      // Don't clear localStorage here - let API calls handle expired tokens
+      const token = localStorage.getItem('token');
+      const role = localStorage.getItem('role');
+      
+      if (!token || role !== 'STUDENT') {
+        // Only redirect, don't clear storage automatically
+        // Storage will be cleared on actual logout or session expiry via API
+        setIsValid(false);
+      } else {
+        setIsValid(true);
+      }
+    } catch (e) {
+      // Handle localStorage access errors (common in mobile private browsing)
+      console.error('ProtectedRoute storage error:', e);
       setIsValid(false);
-    } else {
-      setIsValid(true);
     }
     setIsChecking(false);
   }, []);

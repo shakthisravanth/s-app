@@ -23,37 +23,63 @@ const Login = ({ isEmbedded = false, defaultRole = 'student' }) => {
         const emailError = validators.email(email);
         if (emailError) {
             setError(emailError);
+            toast.error(emailError);
             return;
         }
 
+        // Prevent double submission on mobile (tap vs click issues)
+        if (isLoading) return;
+        
         setIsLoading(true);
 
         try {
             const response = await fetch('https://incred-demo-production.up.railway.app/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password }),
+                // Add timeout handling for slow mobile connections
+                signal: AbortSignal.timeout(30000) // 30 second timeout
             });
 
-            if (!response.ok) throw new Error('Invalid credentials');
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || 'Invalid credentials');
+            }
 
             const data = await response.json();
 
             // Critical Role Check
             if (data.role === 'ADMIN') {
                 toast.error('Admin access detected. Please use the Admin Portal.');
+                setIsLoading(false);
                 return;
             }
 
-            // Store authentication data persistently
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('role', data.role);
-            localStorage.setItem('name', data.name);
+            // Store authentication data persistently with error handling
+            try {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.role);
+                localStorage.setItem('name', data.name);
+            } catch (storageErr) {
+                console.error('Failed to save auth data:', storageErr);
+                toast.error('Failed to save session. Please allow cookies/storage.');
+                setIsLoading(false);
+                return;
+            }
+
             toast.success(`Welcome back, ${data.name}!`);
-            navigate('/student-dashboard');
+            
+            // Use replace to prevent back button issues on mobile
+            navigate('/student-dashboard', { replace: true });
         } catch (err) {
-            toast.error(err.message || 'Login failed');
-            setError(err.message || 'Login failed. Please check your credentials.');
+            // Handle timeout errors
+            if (err.name === 'AbortError') {
+                toast.error('Request timed out. Please check your connection and try again.');
+                setError('Connection timeout. Please try again.');
+            } else {
+                toast.error(err.message || 'Login failed');
+                setError(err.message || 'Login failed. Please check your credentials.');
+            }
         } finally {
             setIsLoading(false);
         }

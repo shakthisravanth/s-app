@@ -109,6 +109,8 @@ h4 {
   justify-content: center;
   align-items: center;
   padding: 2rem;
+  /* Prevent zoom on mobile when focusing inputs */
+  touch-action: manipulation;
 }
 
 .auth-card {
@@ -125,6 +127,9 @@ h4 {
   border: 1px solid var(--border-light);
   position: relative;
   overflow: hidden;
+  /* Ensure proper rendering on mobile */
+  transform: translateZ(0);
+  will-change: auto;
 }
 
 .auth-card::before {
@@ -177,6 +182,11 @@ h4 {
   color: white;
   font-size: 1rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Mobile-friendly input sizing */
+  -webkit-appearance: none;
+  appearance: none;
+  /* Prevent text size adjustment on iPhone */
+  font-size: max(1rem, 16px);
 }
 
 .form-input:focus {
@@ -211,6 +221,11 @@ input:-webkit-autofill:focus {
   text-transform: uppercase;
   letter-spacing: 0.15em;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  /* Mobile-friendly button */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .login-btn:hover {
@@ -221,6 +236,14 @@ input:-webkit-autofill:focus {
 
 .login-btn:active {
   transform: translateY(-2px);
+}
+
+/* Ensure button is easily tappable on mobile */
+@media (max-width: 768px) {
+  .login-btn {
+    min-height: 48px;
+    padding: 1.4rem;
+  }
 }
 
 .help-text {

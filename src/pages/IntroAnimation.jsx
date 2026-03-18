@@ -5,41 +5,52 @@ import Login from './Login';
 
 const IntroAnimation = () => {
     const [step, setStep] = React.useState(() => {
-        return sessionStorage.getItem('intro_played') ? 3 : 1;
+        // Use try-catch for mobile browser compatibility
+        try {
+            return sessionStorage.getItem('intro_played') ? 3 : 1;
+        } catch (e) {
+            // Fallback if sessionStorage is not available
+            return 1;
+        }
     });
     const [shouldRedirect, setShouldRedirect] = useState(false);
     const navigate = useNavigate();
 
-    // Check if user is already logged in
+    // Check if user is already logged in - run immediately on mount
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const role = localStorage.getItem('role');
-        
-        if (token && role === 'STUDENT') {
-            // User is already authenticated, redirect to dashboard
-            setShouldRedirect(true);
+        try {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            
+            if (token && role === 'STUDENT') {
+                // User is already authenticated, redirect immediately
+                navigate('/student-dashboard', { replace: true });
+                return;
+            }
+        } catch (e) {
+            // Handle localStorage errors gracefully
+            console.error('Storage access error:', e);
         }
-    }, []);
+    }, [navigate]);
 
     useEffect(() => {
-        if (shouldRedirect) {
-            navigate('/student-dashboard');
-            return;
-        }
-
         if (step === 3) return;
 
         const timer1 = setTimeout(() => setStep(2), 3000); // 3s for "Welcome"
         const timer2 = setTimeout(() => {
             setStep(3);
-            sessionStorage.setItem('intro_played', 'true');
+            try {
+                sessionStorage.setItem('intro_played', 'true');
+            } catch (e) {
+                console.error('Failed to save intro_played:', e);
+            }
         }, 8500); // 5.5s for name reveal
 
         return () => {
             clearTimeout(timer1);
             clearTimeout(timer2);
         };
-    }, [step, shouldRedirect, navigate]);
+    }, [step]);
 
     const name = "Shakthi Sravanth";
     const nameChars = Array.from(name);
