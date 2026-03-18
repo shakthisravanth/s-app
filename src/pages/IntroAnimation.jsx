@@ -13,7 +13,6 @@ const IntroAnimation = () => {
             return 1;
         }
     });
-    const [shouldRedirect, setShouldRedirect] = useState(false);
     const navigate = useNavigate();
 
     // Check if user is already logged in - run immediately on mount
@@ -22,8 +21,11 @@ const IntroAnimation = () => {
             const token = localStorage.getItem('token');
             const role = localStorage.getItem('role');
             
+            console.log('IntroAnimation - Auth check:', { hasToken: !!token, role });
+            
             if (token && role === 'STUDENT') {
                 // User is already authenticated, redirect immediately
+                console.log('User already logged in, redirecting...');
                 navigate('/student-dashboard', { replace: true });
                 return;
             }
@@ -31,7 +33,7 @@ const IntroAnimation = () => {
             // Handle localStorage errors gracefully
             console.error('Storage access error:', e);
         }
-    }, [navigate]);
+    }, []);
 
     useEffect(() => {
         if (step === 3) return;
